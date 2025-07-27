@@ -57,7 +57,10 @@ zsd_file = st.file_uploader("Upload ZSD_PO_PER_SO", type=["xls", "xlsx"])
 status_file = st.file_uploader("Upload ZSTATUS", type=["xls", "xlsx"])
 
 if am_log_file is not None:
-    am_log_df = pd.read_excel(am_log_file)
+    # Read all data as strings so equipment numbers keep their leading zeros
+    am_log_df = pd.read_excel(am_log_file, dtype=str)
+    # Strip whitespace from column names to avoid mismatches
+    am_log_df.columns = am_log_df.columns.str.strip()
 
     missing_cols = [
         col for col in AM_LOG_COLUMNS.values() if col not in am_log_df.columns
@@ -65,11 +68,9 @@ if am_log_file is not None:
     if missing_cols:
         st.error(f"Missing columns in AM LOG: {', '.join(missing_cols)}")
     else:
-        filtered = am_log_df[
-            am_log_df[AM_LOG_COLUMNS["Equipment number"]]
-            .astype(str)
-            .isin(EQUIPMENT_NUMBERS)
-        ]
+        equipment_col = am_log_df[AM_LOG_COLUMNS["Equipment number"]].str.strip()
+        filtered = am_log_df[equipment_col.isin(EQUIPMENT_NUMBERS)]
+
         output_columns = [
             AM_LOG_COLUMNS["Delivery Date"],
             AM_LOG_COLUMNS["Customer Reference"],

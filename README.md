@@ -23,3 +23,7 @@ You will be prompted to upload the following Excel files:
 After uploading the **AM LOG** file, the app shows the filtered rows containing
 only the columns Delivery Date, Customer Reference, Serial number, Year of
 construction and Month of construction.
+
+Equipment numbers are treated as strings so leading zeros are preserved. If your
+file stores them as numbers, the app will still match correctly because the data
+is read as text.
