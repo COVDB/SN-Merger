@@ -25,5 +25,5 @@ only the columns Delivery Date, Customer Reference, Serial number, Year of
 construction and Month of construction.
 
 Equipment numbers are treated as strings so leading zeros are preserved. If your
-file stores them as numbers, the app will still match correctly because the data
-is read as text.
+file stores them as numbers, the app converts that column with `astype(str)` so
+matching works even if pandas originally inferred a numeric type.

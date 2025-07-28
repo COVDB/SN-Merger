@@ -68,7 +68,7 @@ if am_log_file is not None:
     if missing_cols:
         st.error(f"Missing columns in AM LOG: {', '.join(missing_cols)}")
     else:
-        equipment_col = am_log_df[AM_LOG_COLUMNS["Equipment number"]].str.strip()
+        equipment_col = am_log_df[AM_LOG_COLUMNS["Equipment number"]].astype(str).str.strip()
         filtered = am_log_df[equipment_col.isin(EQUIPMENT_NUMBERS)]
 
         output_columns = [
