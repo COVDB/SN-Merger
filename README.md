@@ -28,6 +28,13 @@ automatically derived from the Delivery Date. The sidebar also lists the
 equipment numbers used for filtering and lets you add or remove them.
 
 
+If you also upload the **ZSD_PO_PER_SO** sheet, rows are enriched with the
+matching *Document* and *Material* columns when `Customer Reference` values from
+AM LOG correspond to `Document` values in ZSD_PO_PER_SO.
+
+
+
+
 Equipment numbers are treated as strings so leading zeros are preserved. If your
 file stores them as numbers, the app converts that column with `astype(str)` so
 matching works even if pandas originally inferred a numeric type.
