@@ -71,20 +71,67 @@ if amlog_file and zsd_file and status_file:
     #
     # Stap 4: kolomselecties
     #
-    st.header("Key-kolommen selecteren")
-    amlog_ref       = st.selectbox("AM LOG: Customer Reference",    df_amlog.columns, index=df_amlog.columns.get_loc("Customer Reference") if "Customer Reference" in df_amlog.columns else 0)
-    amlog_matcol    = st.selectbox("AM LOG: Material Number",       df_amlog.columns, index=df_amlog.columns.get_loc("Material Number")    if "Material Number"    in df_amlog.columns else 0)
-    amlog_eq        = st.selectbox("AM LOG: Equipment Number",      df_amlog.columns, index=df_amlog.columns.get_loc("Equipment Number")   if "Equipment Number"   in df_amlog.columns else 0)
-    amlog_sn        = st.selectbox("AM LOG: Serial number",         df_amlog.columns, index=df_amlog.columns.get_loc("Serial number")      if "Serial number"      in df_amlog.columns else 0)
+    amlog_ref       = st.selectbox(
+        "AM LOG: Customer Reference", df_amlog.columns,
+        index=df_amlog.columns.get_loc("Customer Reference") 
+              if "Customer Reference" in df_amlog.columns else 0
+    )
+    amlog_matcol    = st.selectbox(
+        "AM LOG: Material Number", df_amlog.columns,
+        index=df_amlog.columns.get_loc("Material Number")    
+              if "Material Number" in df_amlog.columns else 0
+    )
+    amlog_eq        = st.selectbox(
+        "AM LOG: Equipment Number", df_amlog.columns,
+        index=df_amlog.columns.get_loc("Equipment Number")   
+              if "Equipment Number" in df_amlog.columns else 0
+    )
+    amlog_sn        = st.selectbox(
+        "AM LOG: Serial number", df_amlog.columns,
+        index=df_amlog.columns.get_loc("Serial number")      
+              if "Serial number" in df_amlog.columns else 0
+    )
 
-    zsd_doc         = st.selectbox("EXPORT: Document (Purch.Doc)",   df_zsd.columns,   index=df_zsd.columns.get_loc("Document")             if "Document"            in df_zsd.columns else 0)
-    zsd_mat         = st.selectbox("EXPORT: Material",               df_zsd.columns,   index=df_zsd.columns.get_loc("Material")             if "Material"            in df_zsd.columns else 0)
-    zsd_proj        = st.selectbox("EXPORT: Project Reference",     df_zsd.columns,   index=df_zsd.columns.get_loc("Project Reference")    if "Project Reference"   in df_zsd.columns else 0)
+    zsd_doc         = st.selectbox(
+        "EXPORT: Document (Purch.Doc)", df_zsd.columns,
+        index=df_zsd.columns.get_loc("Document")             
+              if "Document" in df_zsd.columns else 0
+    )
+    zsd_mat         = st.selectbox(
+        "EXPORT: Material", df_zsd.columns,
+        index=df_zsd.columns.get_loc("Material")             
+              if "Material" in df_zsd.columns else 0
+    )
+    zsd_proj        = st.selectbox(
+        "EXPORT: Project Reference", df_zsd.columns,
+        index=df_zsd.columns.get_loc("Project Reference")    
+              if "Project Reference" in df_zsd.columns else 0
+    )
 
-    stat_projref    = st.selectbox("ZSTATUS: ProjRef",               df_stat.columns,  index=df_stat.columns.get_loc("ProjRef")             if "ProjRef"             in df_stat.columns else 0)
-    stat_soldto     = st.selectbox("ZSTATUS: Sold-to pt",            df_stat.columns,  index=df_stat.columns.get_loc("Sold-to pt")          if "Sold-to pt"          in df_stat.columns else 0)
-    stat_shipto     = st.selectbox("ZSTATUS: Ship-to",               df_stat.columns,  index=df_stat.columns.get_loc("Ship-to")             if "Ship-to"             in df_stat.columns else 0)
-    stat_created    = st.selectbox("ZSTATUS: Created on",            df_stat.columns,  index=df_stat.columns.get_loc("Created on")          if "Created on"          in df_stat.columns else 0)
+    stat_doc      = st.selectbox(
+        "ZSTATUS: Document",
+        df_stat.columns,
+        index=df_stat.columns.get_loc("Document")
+              if "Document" in df_stat.columns else 0
+    )
+    stat_soldto   = st.selectbox(
+        "ZSTATUS: Sold-to pt",
+        df_stat.columns,
+        index=df_stat.columns.get_loc("Sold-to pt")
+              if "Sold-to pt" in df_stat.columns else 0
+    )
+    stat_shipto   = st.selectbox(
+        "ZSTATUS: Ship-to",
+        df_stat.columns,
+        index=df_stat.columns.get_loc("Ship-to")
+              if "Ship-to" in df_stat.columns else 0
+    )
+    stat_created  = st.selectbox(
+        "ZSTATUS: Created on",
+        df_stat.columns,
+        index=df_stat.columns.get_loc("Created on")
+              if "Created on" in df_stat.columns else 0
+    )
 
     #
     # Verwerk en merge
@@ -94,7 +141,7 @@ if amlog_file and zsd_file and status_file:
         for df, col in [
             (df_amlog, amlog_ref),
             (df_zsd,   zsd_doc),
-            (df_stat,  stat_projref)
+            (df_stat,  stat_doc)
         ]:
             df[col] = df[col].astype(str).str.replace(r'\.0$','',regex=True).str.strip()
 
@@ -111,20 +158,20 @@ if amlog_file and zsd_file and status_file:
         )
         st.write(f"Na merge met EXPORT: {len(df1)} rijen")
 
-        # d) merge2 ↔ ZSTATUS
+        # d) merge2 ↔ ZSTATUS on Document
         df2 = df1.merge(
-            df_stat[[stat_projref, stat_soldto, stat_shipto, stat_created]],
-            left_on=zsd_proj, right_on=stat_projref,
+            df_stat[[stat_doc, stat_soldto, stat_shipto, stat_created]],
+            left_on=zsd_doc, right_on=stat_doc,
             how="left",
             suffixes=("","_zst")
         )
-        st.write(f"Na merge met ZSTATUS: {len(df2)} rijen")
+        st.write(f"Na merge met ZSTATUS op Document: {len(df2)} rijen")
 
         # e) selecteer output-kolommen
         out_cols = [
             "Delivery Date", amlog_ref, amlog_eq, amlog_sn,
             "Year of construction", "Month of construction",
-            zsd_mat, zsd_doc, zsd_proj,
+            zsd_mat, zsd_doc,
             stat_soldto, stat_shipto, stat_created
         ]
         df_out = df2[out_cols].copy()
