@@ -104,8 +104,10 @@ if am_log_file is not None:
 
         removed_count = len(am_log_df) - len(filtered)
 
+
         # Default to the filtered rows. Join with ZSD_PO_PER_SO if provided.
         merged = filtered.copy()
+
         if zsd_file is not None:
             zsd_df = pd.read_excel(zsd_file, dtype=str)
             zsd_df.columns = zsd_df.columns.str.strip()
@@ -121,6 +123,10 @@ if am_log_file is not None:
             else:
                 st.warning("ZSD_PO_PER_SO missing 'Document' or 'Material' columns")
 
+
+                merged = filtered.copy()
+
+
         output_columns = [
             AM_LOG_COLUMNS["Delivery Date"],
             AM_LOG_COLUMNS["Customer Reference"],
@@ -128,12 +134,28 @@ if am_log_file is not None:
             AM_LOG_COLUMNS["Year of construction"],
             AM_LOG_COLUMNS["Month of construction"],
         ]
+
         if zsd_file is not None and {"Document", "Material"}.issubset(merged.columns):
+
+
+
             output_columns.extend(["Document", "Material"])
 
         st.write(
             f"Filtered AM LOG - removed {removed_count} of {len(am_log_df)} rows"
         )
         st.dataframe(merged[output_columns])
+
+
+
+
+
+        st.write(
+            f"Filtered AM LOG - removed {removed_count} of {len(am_log_df)} rows"
+        )
+        st.dataframe(filtered[output_columns])
+
+
+
 else:
     st.info("Waiting for AM LOG file upload")
