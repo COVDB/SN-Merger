@@ -52,9 +52,26 @@ st.write(
     "Upload the three Excel sheets: 'AM LOG', 'ZSD_PO_PER_SO' and 'ZSTATUS'."
 )
 
-am_log_file = st.file_uploader("Upload AM LOG", type=["xls", "xlsx"])
-zsd_file = st.file_uploader("Upload ZSD_PO_PER_SO", type=["xls", "xlsx"])
-status_file = st.file_uploader("Upload ZSTATUS", type=["xls", "xlsx"])
+st.sidebar.header("Uploads")
+am_log_file = st.sidebar.file_uploader("Upload AM LOG", type=["xls", "xlsx"])
+zsd_file = st.sidebar.file_uploader("Upload ZSD_PO_PER_SO", type=["xls", "xlsx"])
+status_file = st.sidebar.file_uploader("Upload ZSTATUS", type=["xls", "xlsx"])
+
+st.sidebar.header("Filtering")
+# Allow users to add additional material numbers via text area
+extra_numbers_text = st.sidebar.text_area(
+    "Additional material numbers (one per line)",
+    value="",
+)
+extra_numbers = [n.strip() for n in extra_numbers_text.splitlines() if n.strip()]
+
+# Combine default and additional numbers then let the user select which to use
+all_numbers = MATERIAL_NUMBERS + extra_numbers
+selected_numbers = st.sidebar.multiselect(
+    "Material numbers for filtering",
+    options=all_numbers,
+    default=MATERIAL_NUMBERS,
+)
 
 if am_log_file is not None:
     # Read all data as strings so material numbers keep their leading zeros
@@ -62,14 +79,30 @@ if am_log_file is not None:
     # Strip whitespace from column names to avoid mismatches
     am_log_df.columns = am_log_df.columns.str.strip()
 
+    # Extract year and month from Delivery Date into construction columns
+    if AM_LOG_COLUMNS["Delivery Date"] in am_log_df.columns:
+        delivery_dates = pd.to_datetime(
+            am_log_df[AM_LOG_COLUMNS["Delivery Date"].strip()], errors="coerce"
+        )
+        am_log_df[AM_LOG_COLUMNS["Year of construction"]] = (
+            delivery_dates.dt.year.astype("Int64").astype(str)
+        )
+        am_log_df[AM_LOG_COLUMNS["Month of construction"]] = (
+            delivery_dates.dt.month.astype("Int64").astype(str).str.zfill(2)
+        )
+
     missing_cols = [
         col for col in AM_LOG_COLUMNS.values() if col not in am_log_df.columns
     ]
     if missing_cols:
         st.error(f"Missing columns in AM LOG: {', '.join(missing_cols)}")
     else:
-        material_col = am_log_df[AM_LOG_COLUMNS["Material Number"]].astype(str).str.strip()
-        filtered = am_log_df[material_col.isin(MATERIAL_NUMBERS)]
+        material_col = (
+            am_log_df[AM_LOG_COLUMNS["Material Number"]].astype(str).str.strip()
+        )
+        filtered = am_log_df[material_col.isin(selected_numbers)]
+
+        removed_count = len(am_log_df) - len(filtered)
 
         output_columns = [
             AM_LOG_COLUMNS["Delivery Date"],
@@ -78,7 +111,9 @@ if am_log_file is not None:
             AM_LOG_COLUMNS["Year of construction"],
             AM_LOG_COLUMNS["Month of construction"],
         ]
-        st.write("Filtered AM LOG")
+        st.write(
+            f"Filtered AM LOG - removed {removed_count} of {len(am_log_df)} rows"
+        )
         st.dataframe(filtered[output_columns])
 else:
     st.info("Waiting for AM LOG file upload")
